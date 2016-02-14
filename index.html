@@ -7,32 +7,23 @@
 	<link href="css/app.css" rel="stylesheet" type="text/css" media="screen, projection" />
 	<script type="text/javascript" src="js/app.js"></script>
   	
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
-    
-  	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    
-	<!-- Latest compiled and minified JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-  	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
 </head>
 <body>
-	<div>
+	<form action="" method="post" onsubmit="javascript:printOutput(this.form)" >
+       	<input type="text" class="search" name="searchBox" placeholder="Search Flikr..." id="search" >
+        <input type="button" class="button" name="submitButton" value="Search" onclick="javascript:printOutput(this.form)"> 
+	</form>
+	
+	<h1>Flikr Search Image Gallery</h1>
+	<ul class="hoverbox" id="gallery">
+		<!-- inject gallery photos here through JS -->
+	</ul>
+	
+	<ul class="pagination" id="pagination">
+		<!-- inject pagination pages here -->
+	</ul>
 
-		
-		<form>
-           	<input type="text" class="search" name="searchBox" placeholder="Search Flikr..." id="search" required>
-           	<input type="button" class="button" name="submitButton" value="Search" onClick="javascript:printOutput(this.form)">
-		</form>
-		<div>
-			<h1>Flikr Search Image Gallery</h1>
-			<br/>
-			<ul class="hoverbox" id="gallery">
-				<!-- inject gallery photos here through JS -->
-			</ul>
-		</div>
-	</div>
+
 	
 </body>
 </html>

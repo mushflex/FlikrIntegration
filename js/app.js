@@ -10,16 +10,24 @@ var FlikrApp = {
 	
 	api_url: "https://api.flickr.com/services/rest/",
 	api_key: "5a14290fec50f53f1f4f5e8c15ae1b0a",
-	api_sec: "c49b0e390ea61e87",
+	strSavedQuery: "", 
+	maxPageNo: 0,
 	
 	// helper function for cross-browser request object
-	doAjax: function (query, success, error) {
+	doFlikrApiCall: function (query, pageNo) {
+		
+		FlikrApp.strSavedQuery = query;
 	    var req = false;
+	    var blnFirstSrch = false;
+	    if (!pageNo){
+	    	pageNo = 1;
+	    	blnFirstSrch = true
+	    }
 	    try{
 	        // most browsers
 	        req = new XMLHttpRequest();
 	    } catch (e){
-	        // IE
+	        // IE support (not tested)
 	        try{
 	            req = new ActiveXObject("Msxml2.XMLHTTP");
 	        } catch(e) {
@@ -36,58 +44,64 @@ var FlikrApp = {
 	    if (typeof error!= 'function') error = function () {};
 	    req.onreadystatechange = function(){
 	    	if (req.readyState == 4 && req.status == 200) {
-	            var objResp = FlikrApp.xmlToJson(req.responseXML.documentElement);
-	            console.log(objResp);
+	            var objResp = FlikrApp.convertXmlToJson(req.responseXML.documentElement);
+	            //console.log(objResp);
 	            FlikrApp.drawOutput(objResp);
+	            
+	            //setup/update pagination
+	            if(blnFirstSrch)
+	            	FlikrApp.updatePagination(pageNo, pageNo);
+	            else
+	            	FlikrApp.updatePagination(FlikrApp.maxPageNo-7, pageNo);
 	        }
 	    	
-	    }
-	    var url = FlikrApp.api_url + "?method=flickr.photos.search&api_key="+FlikrApp.api_key+"&text="+query;
+	    } 
+	    var url = FlikrApp.api_url + "?method=flickr.photos.search&api_key="+FlikrApp.api_key+"&text="+query+"&per_page=5&page="+pageNo;
 	    req.open("GET", url, true);
-	    console.log(req);
+	    //console.log(req);
 	    req.send(null);
 	    
 	},
 
-	xmlToJson: function(xml) {
+	convertXmlToJson: function(strXml) {
 		
 		// Create the return object
-		var	data = {};
+		var	jsonData = {};
 
 		// append a value
 		function Add(name, value) {
-			if (data[name]) {
-				if (data[name].constructor != Array) {
-					data[name] = [data[name]];
+			if (jsonData[name]) {
+				if (jsonData[name].constructor != Array) {
+					jsonData[name] = [jsonData[name]];
 				}
-				data[name][data[name].length] = value;
+				jsonData[name][jsonData[name].length] = value;
 			}
 			else {
-				data[name] = value;
+				jsonData[name] = value;
 			}
 		};
 		
 		// element attributes
-		var c, cn;
-		for (c = 0; cn = xml.attributes[c]; c++) {
-			Add(cn.name, cn.value);
+		var child, childnode;
+		for (child = 0; childnode = xml.attributes[child]; child++) {
+			Add(childnode.name, childnode.value);
 		}
 		
 		// child elements
-		for (c = 0; cn = xml.childNodes[c]; c++) {
-			if (cn.nodeType == 1) {
-				if (cn.childNodes.length == 1 && cn.firstChild.nodeType == 3) {
+		for (child = 0; childnode = xml.childNodes[child]; child++) {
+			if (childnode.nodeType == 1) {
+				if (childnode.childNodes.length == 1 && childnode.firstChild.nodeType == 3) {
 					// text value
-					Add(cn.nodeName, cn.firstChild.nodeValue);
+					Add(childnode.nodeName, childnode.firstChild.nodeValue);
 				}
 				else {
-					// sub-object
-					Add(cn.nodeName, FlikrApp.xmlToJson(cn));
+					// recursively go deeper into tree
+					Add(childnode.nodeName, FlikrApp.convertXmlToJson(childnode));
 				}
 			}
 		}
 
-		return data;
+		return jsonData;
 	},
 	
 	// handles the response, adds the html
@@ -97,15 +111,37 @@ var FlikrApp = {
 		//console.log("arrPhotos"+arrPhotos);
 	    for(index in arrPhotos) {
 	    	var objPhoto = arrPhotos[index];
-	    	console.log("photo is: ", objPhoto);
+	    	//console.log("photo is: ", objPhoto);
 	    	var imgUrlThumb = "https://farm"+objPhoto.farm+".staticflickr.com/"+objPhoto.server+"/"+objPhoto.id+"_"+objPhoto.secret+"_t.jpg"
 	    	var imgUrlOrig = "https://farm"+objPhoto.farm+".staticflickr.com/"+objPhoto.server+"/"+objPhoto.id+"_"+objPhoto.secret+".jpg"	
 	    	var	imgDesc = objPhoto.title
-	        strHtml += '<li><a href="'+imgUrlOrig+'"><img src="'+imgUrlThumb+'" alt="'+imgDesc+'" /><img src="'+imgUrlOrig+'" alt="'+imgDesc+'" class="preview" /></a></li>';
+	        strHtml += '<li><a href="'+imgUrlOrig+'" target="_blank"><img src="'+imgUrlThumb+'" alt="'+imgDesc+'" title="'+imgDesc+'" /><img src="'+imgUrlOrig+'" alt="'+imgDesc+'" title="'+imgDesc+'" class="preview" /></a></li>';
 	    }
 	    //print onto list
 	    document.getElementById('gallery').innerHTML = strHtml;
-	   
+	},
+	
+	/*
+	 * pagination section
+	 */
+	updatePagination: function(pageNo, activePage){
+		var strHtml = "";
+		FlikrApp.maxPageNo = pageNo+7;
+		if(pageNo > 1){
+			intPrevSetPage = FlikrApp.maxPageNo-15;
+			if(intPrevSetPage < 0) intPrevSetPage = 1; 
+			strHtml += '<li onclick="javascript:paginationChange('+intPrevSetPage+')"><a><<</a></li>'
+		}
+		for(var i=pageNo;i<=FlikrApp.maxPageNo;i++){
+			if(i == activePage)
+				strHtml += '<li onclick="javascript:printOutput(null,'+i+')"><a class="active">'+i+'</a></li>'
+			else
+				strHtml += '<li onclick="javascript:printOutput(null,'+i+')"><a>'+i+'</a></li>'
+		}
+		intNewSetPage = FlikrApp.maxPageNo+1;
+		strHtml += '<li onclick="javascript:paginationChange('+intNewSetPage+')"><a>>></a></li>'
+		
+		document.getElementById('pagination').innerHTML = strHtml;
 	},
 	
 	//handles drawing an error message
@@ -114,14 +150,20 @@ var FlikrApp = {
 	    container.innerHTML = 'There was an error!';
 	}
 	
-		
 }
 
 
-function printOutput(objForm) {
-	var strSrchQry = objForm.searchBox.value;
-	FlikrApp.doAjax(strSrchQry);	
-}  
+function printOutput(objForm, pageNo) {
+	if(objForm)	var strSrchQry = objForm.searchBox.value;
+	else var strSrchQry = FlikrApp.strSavedQuery;
+	
+	if(pageNo)FlikrApp.doFlikrApiCall(strSrchQry, pageNo);	
+	else FlikrApp.doFlikrApiCall(strSrchQry);	
+} 
+
+function paginationChange(intPageNo){
+	FlikrApp.updatePagination(intPageNo);
+}
 
 
 

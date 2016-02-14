@@ -8,12 +8,6 @@
 /* =Basic HTML, Non-essential
 ----------------------------------------------------------------------*/
 
-.center {
-    margin: auto;
-    width: 60%;
-    border: 3px solid #73AD21;
-    padding: 10px;
-}
 
 a
 {
@@ -41,27 +35,11 @@ h1
 	text-align: center;
 }
 
-p
-{
-	clear: both;
-	font: 10px Verdana, sans-serif;
-	padding: 10px 0;
-	text-align: center;
+div.desc {
+    padding: 15px;
+    text-align: center;
 }
-
-p a
-{
-	background: inherit;
-	color: #777;
-}
-
-p a:hover
-{
-	background: inherit;
-	color: #000;
-}
-
-/* =Hoverbox Code
+/* hover over styles
 ----------------------------------------------------------------------*/
 
 .hoverbox
@@ -100,6 +78,7 @@ p a:hover
 	vertical-align: top;
 	width: 100px;
 	height: 75px;
+	captions: true;
 }
 
 .hoverbox li
@@ -124,13 +103,14 @@ p a:hover
 }
 
 
-/* Search button CSS code
+/* Search button styles
 ----------------------------------------------------------------------*/
 
 .search {
                 padding:8px 15px;
                 background:rgba(50, 50, 50, 0.2);
                 border:0px solid #dbdbdb;
+                margin: 10px 10px 10px;
 }
 .button {
                 position:relative;
@@ -144,3 +124,30 @@ p a:hover
                 background-color:#fafafa;
                 color:#207cca;
 }
+
+/* Pagnation styles
+----------------------------------------------------------------------*/
+ul.pagination {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    padding-left: 25px;
+}
+
+ul.pagination li {display: inline;}
+
+ul.pagination li a {
+    color: black;
+    float: left;
+    padding: 20px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+ul.pagination li a.active {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+}
+
+ul.pagination li a:hover:not(.active) {background-color: #ddd;}
